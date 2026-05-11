@@ -16,13 +16,13 @@ export async function POST(request) {
 
         console.log(`Processing download for: ${url}`);
 
-        // Scrape using Puppeteer
+        // Scrape using Axios + Cheerio
         const data = await scrapePinterestWithPuppeteer(url);
 
         if (!data || (data.imageUrls.length === 0 && !data.videoUrl)) {
-            const errorMessage = data?.isLoginRedirect 
+            const errorMessage = data?.error || (data?.isLoginRedirect 
                 ? 'Pinterest redirected to a login page. This usually happens when the server IP is blocked.' 
-                : 'Failed to extract content. The pin might be private or the format is unsupported.';
+                : 'Failed to extract content. The pin might be private or the format is unsupported.');
             return NextResponse.json({ error: errorMessage }, { status: 422 });
         }
 

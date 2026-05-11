@@ -13,55 +13,76 @@ export async function scrapePinterestWithPuppeteer(url) {
 
         const userAgents = [
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36',
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
             'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Mobile Safari/537.36',
-            'Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Mobile/15E148 Safari/604.1'
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'
         ];
 
         let response;
         let lastError;
+        let targetUrl = url;
+
+        // Try to resolve pin.it redirect separately if needed
+        if (url.includes('pin.it')) {
+            try {
+                const head = await axios.get(url, { 
+                    maxRedirects: 0, 
+                    validateStatus: s => s >= 300 && s < 400,
+                    headers: { 'User-Agent': userAgents[0] }
+                });
+                if (head.headers.location) {
+                    targetUrl = head.headers.location;
+                    console.log(`[Scraper] Resolved redirect to: ${targetUrl}`);
+                }
+            } catch (e) {
+                console.warn(`[Scraper] Redirect resolution failed: ${e.message}`);
+            }
+        }
 
         for (const ua of userAgents) {
             try {
                 console.log(`[Scraper] Fetching with UA: ${ua.substring(0, 30)}...`);
-                response = await axios.get(url, {
+                response = await axios.get(targetUrl, {
                     headers: {
                         'User-Agent': ua,
                         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
                         'Accept-Language': 'en-US,en;q=0.9',
-                        'Cache-Control': 'no-cache',
-                        'Pragma': 'no-cache'
+                        'Referer': 'https://www.google.com/',
+                        'Sec-Fetch-Dest': 'document',
+                        'Sec-Fetch-Mode': 'navigate',
+                        'Sec-Fetch-Site': 'cross-site',
+                        'Upgrade-Insecure-Requests': '1'
                     },
                     maxRedirects: 5,
-                    timeout: 10000,
-                    validateStatus: () => true // Catch all statuses
+                    timeout: 12000,
+                    validateStatus: () => true
                 });
 
                 if (response.status === 200) {
                     const html = response.data;
                     const $ = cheerio.load(html);
                     
-                    // Check for login keywords in HTML
-                    const loginKeywords = ['login', 'signup', 'register', 'password', 'create account', 'continue with google'];
                     const bodyText = $('body').text().toLowerCase();
-                    const isLoginPage = loginKeywords.some(kw => bodyText.includes(kw)) && bodyText.length < 5000; // Login pages are usually small
+                    const isLoginPage = (bodyText.includes('login') || bodyText.includes('sign up')) && bodyText.length < 8000;
 
-                    if (!isLoginPage) {
-                        break; // Success!
-                    } else {
-                        console.warn(`[Scraper] Detected login page with UA: ${ua.substring(0, 30)}`);
-                    }
+                    if (!isLoginPage) break;
+                    console.warn(`[Scraper] Hit login wall with UA: ${ua.substring(0, 30)}`);
                 } else {
-                    console.warn(`[Scraper] status ${response.status} with UA: ${ua.substring(0, 30)}`);
+                    console.warn(`[Scraper] Status ${response.status} with UA: ${ua.substring(0, 30)}`);
                 }
             } catch (e) {
                 lastError = e;
-                console.warn(`[Scraper] Request failed with UA: ${ua.substring(0, 30)} - ${e.message}`);
+                console.warn(`[Scraper] Request failed: ${e.message}`);
             }
         }
 
         if (!response || response.status !== 200) {
-            throw lastError || new Error(`Failed to fetch Pinterest page (Status: ${response?.status})`);
+            return {
+                imageUrls: [],
+                videoUrl: null,
+                error: `Pinterest blocked the request (Status ${response?.status || 'Error'}). This is common on shared hosting IPs.`,
+                isLoginRedirect: true
+            };
         }
 
         const html = response.data;
