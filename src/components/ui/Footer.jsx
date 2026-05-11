@@ -20,12 +20,12 @@ export function Footer() {
                         </p>
                     </div>
 
-                    {/* <div>
+                    <div>
                         <h4 className="font-bold text-white mb-6">Product</h4>
                         <ul className="space-y-4 text-gray-400">
-                            <li><a href="#" className="hover:text-white transition-colors">Features</a></li>
-                            <li><a href="#" className="hover:text-white transition-colors">How it Works</a></li>
-                            <li><a href="#" className="hover:text-white transition-colors">FAQ</a></li>
+                            <li><a href="#features" className="hover:text-white transition-colors">Features</a></li>
+                            <li><a href="#how-it-works" className="hover:text-white transition-colors">How it Works</a></li>
+                            <li><a href="#faq" className="hover:text-white transition-colors">FAQ</a></li>
                         </ul>
                     </div>
 
@@ -36,7 +36,7 @@ export function Footer() {
                             <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
                             <li><a href="#" className="hover:text-white transition-colors">DMCA</a></li>
                         </ul>
-                    </div> */}
+                    </div>
                 </div>
 
                 <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">

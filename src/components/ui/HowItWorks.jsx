@@ -4,12 +4,12 @@ const steps = [
     {
         icon: Copy,
         title: "1. Copy URL",
-        description: "Find the post, photo, or carousel you want to save from Instagram and copy its link."
+        description: "Find the Pin, photo, or carousel you want to save from Pinterest and copy its link."
     },
     {
         icon: Link,
         title: "2. Paste Link",
-        description: "Return to InstaSave and paste your link into the input field at the top of the page."
+        description: "Return to PinImageGrab and paste your link into the input field at the top of the page."
     },
     {
         icon: Check,

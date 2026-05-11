@@ -6,6 +6,7 @@ import { Hero } from "@/components/ui/Hero";
 import { DownloadSection } from "@/components/ui/DownloadSection";
 import { HowItWorks } from "@/components/ui/HowItWorks";
 import { Features } from "@/components/ui/Features";
+import { FAQ } from "@/components/ui/FAQ";
 import { Footer } from "@/components/ui/Footer";
 
 export default function Home() {
@@ -76,6 +77,8 @@ export default function Home() {
         <HowItWorks />
 
         <Features />
+        
+        <FAQ />
 
         <Footer />
       </div>

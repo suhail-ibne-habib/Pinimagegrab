@@ -46,8 +46,8 @@ export function Hero({ onUrlSubmit, isLoading }) {
                 </div>
 
                 <h1 className="hero-animate text-5xl md:text-7xl font-bold tracking-tight leading-tight">
-                    Download <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-500">Pinterest</span> content in <br className="hidden md:block" />
-                    Full Quality.
+                    Free <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-500">Pinterest</span> Video & Image <br className="hidden md:block" />
+                    Downloader.
                 </h1>
 
                 <p className="hero-animate text-lg md:text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
