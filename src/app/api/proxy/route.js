@@ -12,6 +12,11 @@ export async function GET(request) {
     try {
         const response = await axios.get(imageUrl, {
             responseType: 'arraybuffer',
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
+                'Referer': 'https://www.pinterest.com/',
+            },
+            timeout: 30000 // Higher timeout for videos
         });
 
         const contentType = response.headers['content-type'] || 'application/octet-stream';
