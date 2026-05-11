@@ -20,7 +20,10 @@ export async function POST(request) {
         const data = await scrapePinterestWithPuppeteer(url);
 
         if (!data || (data.imageUrls.length === 0 && !data.videoUrl)) {
-            return NextResponse.json({ error: 'Failed to extract content. Private pin or login required.' }, { status: 422 });
+            const errorMessage = data?.isLoginRedirect 
+                ? 'Pinterest redirected to a login page. This usually happens when the server IP is blocked.' 
+                : 'Failed to extract content. The pin might be private or the format is unsupported.';
+            return NextResponse.json({ error: errorMessage }, { status: 422 });
         }
 
         return NextResponse.json(data);

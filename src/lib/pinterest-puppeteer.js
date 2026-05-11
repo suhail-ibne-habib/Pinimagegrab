@@ -25,12 +25,21 @@ export async function scrapePinterestWithPuppeteer(url) {
         const html = response.data;
         const $ = cheerio.load(html);
         
+        // Check if we were redirected to a login page
+        const finalUrl = response.request.res.responseUrl || url;
+        let isLoginRedirect = false;
+        if (finalUrl.includes('/login/') || finalUrl.includes('?next=')) {
+            console.warn(`[Scraper] Redirected to login page: ${finalUrl}`);
+            isLoginRedirect = true;
+        }
+        
         const result = {
             imageUrls: [],
             videoUrl: null,
             caption: '',
             author: '',
-            authorName: ''
+            authorName: '',
+            isLoginRedirect: isLoginRedirect
         };
 
         // --- 1. Extract from __PWS_DATA__ (Most Reliable) ---
@@ -83,7 +92,9 @@ export async function scrapePinterestWithPuppeteer(url) {
         }
 
         if (result.videoUrl || result.imageUrls.length > 0) {
-            console.log("[Scraper] Successfully extracted data from PWS_DATA.");
+            console.log("[Scraper] Success using PWS_DATA");
+            // Upgrade images to originals
+            result.imageUrls = result.imageUrls.map(url => url.replace(/\/(736x|564x|474x|236x)\//, '/originals/'));
             return result;
         }
 
@@ -110,7 +121,48 @@ export async function scrapePinterestWithPuppeteer(url) {
             });
         } catch (e) {}
 
-        // --- 3. Fallback: Regex for raw strings (Last Resort) ---
+        if (result.videoUrl || result.imageUrls.length > 0) {
+            console.log("[Scraper] Success using JSON-LD");
+            // Upgrade images to originals
+            result.imageUrls = result.imageUrls.map(url => url.replace(/\/(736x|564x|474x|236x)\//, '/originals/'));
+            return result;
+        }
+
+        // --- 3. Fallback: Extract from Meta Tags (og tags) ---
+        try {
+            if (!result.videoUrl) {
+                const metaVideo = $('meta[property="og:video:secure_url"]').attr('content') || 
+                                 $('meta[property="og:video"]').attr('content') ||
+                                 $('meta[name="twitter:player:stream"]').attr('content');
+                if (metaVideo) {
+                    result.videoUrl = metaVideo;
+                }
+            }
+            if (result.imageUrls.length === 0) {
+                const metaImage = $('meta[property="og:image"]').attr('content') || 
+                                 $('meta[name="twitter:image"]').attr('content');
+                if (metaImage) {
+                    result.imageUrls.push(metaImage);
+                }
+            }
+            if (!result.caption) {
+                result.caption = $('meta[property="og:title"]').attr('content') || 
+                                 $('meta[name="description"]').attr('content') || 
+                                 $('title').text();
+            }
+        } catch (e) {
+            console.error("[Scraper] Error parsing meta tags:", e.message);
+        }
+
+        if (result.videoUrl || result.imageUrls.length > 0) {
+            console.log("[Scraper] Success using Meta Tags");
+            // Upgrade images to originals
+            result.imageUrls = result.imageUrls.map(url => url.replace(/\/(736x|564x|474x|236x)\//, '/originals/'));
+            return result;
+        }
+
+        // --- 4. Fallback: Regex for raw strings (Last Resort) ---
+        console.log("[Scraper] Trying Regex fallback...");
         if (!result.videoUrl) {
             const vidMatch = html.match(/"V_720P":\s*\{\s*"url":\s*"(https:\/\/[^"]+)"/);
             if (vidMatch) result.videoUrl = vidMatch[1].replace(/\\u002f/g, '/');
@@ -120,9 +172,21 @@ export async function scrapePinterestWithPuppeteer(url) {
             if (imgMatch) result.imageUrls.push(imgMatch[1].replace(/\\u002f/g, '/'));
         }
 
-        // Deduplicate and clean
-        result.imageUrls = [...new Set(result.imageUrls)];
+        // Additional Regex for any high-res pinterest image
+        if (result.imageUrls.length === 0) {
+            const genericImgMatch = html.match(/"url":\s*"(https:\/\/i\.pinimg\.com\/originals\/[^"]+)"/);
+            if (genericImgMatch) result.imageUrls.push(genericImgMatch[1].replace(/\\u002f/g, '/'));
+        }
+
+        // Deduplicate, clean, and upgrade
+        result.imageUrls = [...new Set(result.imageUrls)].map(url => url.replace(/\/(736x|564x|474x|236x)\//, '/originals/'));
         
+        if (result.imageUrls.length > 0 || result.videoUrl) {
+            console.log("[Scraper] Success using Regex");
+        } else {
+            console.warn("[Scraper] All extraction methods failed.");
+        }
+
         return result;
 
     } catch (error) {

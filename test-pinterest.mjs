@@ -1,7 +1,7 @@
 import { scrapePinterestWithPuppeteer } from './src/lib/pinterest-puppeteer.js';
 
 // Test URL (standard pin)
-const url = "https://www.pinterest.com/pin/831406781216550748/";
+const url = "https://pin.it/4tyDOHPeo";
 
 (async () => {
     console.log(`Testing Pinterest scraper for: ${url}`);
