@@ -27,10 +27,10 @@ export async function scrapePinterestWithPuppeteer(url) {
             try {
                 const head = await axios.get(url, { 
                     maxRedirects: 0, 
-                    validateStatus: s => s >= 300 && s < 400,
+                    validateStatus: () => true, // Don't throw on any status
                     headers: { 'User-Agent': userAgents[0] }
                 });
-                if (head.headers.location) {
+                if (head.status >= 300 && head.status < 400 && head.headers.location) {
                     targetUrl = head.headers.location;
                     console.log(`[Scraper] Resolved redirect to: ${targetUrl}`);
                 }
