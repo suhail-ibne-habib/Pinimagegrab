@@ -224,7 +224,13 @@ export async function scrapePinterestWithPuppeteer(url) {
         console.log("[Scraper] Trying Regex fallback...");
         if (!result.videoUrl) {
             const vidMatch = html.match(/"V_720P":\s*\{\s*"url":\s*"(https:\/\/[^"]+)"/);
-            if (vidMatch) result.videoUrl = vidMatch[1].replace(/\\u002f/g, '/');
+            if (vidMatch) {
+                result.videoUrl = vidMatch[1].replace(/\\u002f/g, '/');
+            } else {
+                // Global fallback for any mp4
+                const mp4Match = html.match(/https:\/\/[^"'\s]+\.mp4/);
+                if (mp4Match) result.videoUrl = mp4Match[0].replace(/\\u002f/g, '/');
+            }
         }
         if (result.imageUrls.length === 0) {
             const imgMatch = html.match(/"images_orig":\s*\{\s*"url":\s*"(https:\/\/[^"]+)"/);
