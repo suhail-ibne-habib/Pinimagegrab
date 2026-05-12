@@ -160,10 +160,7 @@ export async function scrapePinterestWithPuppeteer(url) {
         }
 
         if (result.videoUrl || result.imageUrls.length > 0) {
-            console.log("[Scraper] Success using PWS_DATA");
-            // Upgrade images to originals
-            result.imageUrls = result.imageUrls.map(url => url.replace(/\/(736x|564x|474x|236x)\//, '/originals/'));
-            return result;
+            console.log("[Scraper] Found data using PWS_DATA");
         }
 
         // --- 2. Fallback: Extract from JSON-LD ---
@@ -176,7 +173,7 @@ export async function scrapePinterestWithPuppeteer(url) {
                     if (json['@type'] === 'VideoObject') videoObj = json;
                     else if (json.video) videoObj = json.video;
 
-                    if (videoObj && videoObj.contentUrl) {
+                    if (videoObj && videoObj.contentUrl && !result.videoUrl) {
                         result.videoUrl = videoObj.contentUrl;
                     }
                     if (videoObj && videoObj.thumbnailUrl) {
@@ -190,10 +187,7 @@ export async function scrapePinterestWithPuppeteer(url) {
         } catch (e) {}
 
         if (result.videoUrl || result.imageUrls.length > 0) {
-            console.log("[Scraper] Success using JSON-LD");
-            // Upgrade images to originals
-            result.imageUrls = result.imageUrls.map(url => url.replace(/\/(736x|564x|474x|236x)\//, '/originals/'));
-            return result;
+            console.log("[Scraper] Found data using JSON-LD");
         }
 
         // --- 3. Fallback: Extract from Meta Tags (og tags) ---
@@ -223,10 +217,7 @@ export async function scrapePinterestWithPuppeteer(url) {
         }
 
         if (result.videoUrl || result.imageUrls.length > 0) {
-            console.log("[Scraper] Success using Meta Tags");
-            // Upgrade images to originals
-            result.imageUrls = result.imageUrls.map(url => url.replace(/\/(736x|564x|474x|236x)\//, '/originals/'));
-            return result;
+            console.log("[Scraper] Found data using Meta Tags");
         }
 
         // --- 4. Fallback: Regex for raw strings (Last Resort) ---
