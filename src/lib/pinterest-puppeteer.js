@@ -28,7 +28,8 @@ export async function scrapePinterestWithPuppeteer(url) {
                 const head = await axios.get(url, { 
                     maxRedirects: 0, 
                     validateStatus: () => true, // Don't throw on any status
-                    headers: { 'User-Agent': userAgents[0] }
+                    headers: { 'User-Agent': userAgents[0] },
+                    timeout: 5000
                 });
                 if (head.status >= 300 && head.status < 400 && head.headers.location) {
                     targetUrl = head.headers.location;
@@ -54,7 +55,7 @@ export async function scrapePinterestWithPuppeteer(url) {
                         'Upgrade-Insecure-Requests': '1'
                     },
                     maxRedirects: 5,
-                    timeout: 12000,
+                    timeout: 8000,
                     validateStatus: () => true
                 });
 
