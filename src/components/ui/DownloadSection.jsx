@@ -62,7 +62,7 @@ export function DownloadSection({ data, onReset }) {
                                     className="w-full h-auto max-h-[600px]"
                                     poster={images[0]} // Use first image as poster
                                 />
-                                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div className="absolute top-4 right-4 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-10">
                                     <button
                                         onClick={() => handleDownload(data.videoUrl, `pin-video-${Date.now()}.mp4`)}
                                         className="bg-red-600 text-white px-4 py-2 rounded-full font-bold flex items-center gap-2 hover:bg-red-700 transition-colors shadow-lg cursor-pointer"
@@ -90,10 +90,10 @@ export function DownloadSection({ data, onReset }) {
                                         }}
                                     />
                                     {/* Download Overlay Button */}
-                                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 to-transparent flex items-end justify-center opacity-100 md:inset-0 md:bg-black/50 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-10">
                                         <button
                                             onClick={() => handleDownload(img, `pin-image-${Date.now()}.jpg`)}
-                                            className="bg-white text-black px-6 py-3 rounded-full font-bold flex items-center gap-2 hover:bg-gray-200 transition-colors cursor-pointer"
+                                            className="bg-white text-black px-6 py-3 rounded-full font-bold flex items-center gap-2 hover:bg-gray-200 transition-colors cursor-pointer shadow-lg w-full md:w-auto justify-center"
                                         >
                                             <Download className="w-5 h-5" />
                                             Download Image
