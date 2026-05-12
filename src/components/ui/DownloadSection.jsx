@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { Download, CheckCircle, RefreshCw, Instagram } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Download, CheckCircle, RefreshCw, Instagram, Loader2 } from "lucide-react";
 import { Button } from "./Button";
 import { gsap } from "gsap";
 
 export function DownloadSection({ data, onReset }) {
     const sectionRef = useRef(null);
+    const [downloadingUrl, setDownloadingUrl] = useState(null);
 
     useEffect(() => {
         if (data) {
@@ -21,6 +22,7 @@ export function DownloadSection({ data, onReset }) {
 
     const handleDownload = async (urlToDownload, filename) => {
         try {
+            setDownloadingUrl(urlToDownload);
             const response = await fetch(`/api/proxy?url=${encodeURIComponent(urlToDownload)}`);
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
@@ -34,6 +36,8 @@ export function DownloadSection({ data, onReset }) {
         } catch (e) {
             console.error("Download failed", e);
             alert("Failed to download content. Try opening it in a new tab.");
+        } finally {
+            setDownloadingUrl(null);
         }
     };
 
@@ -65,10 +69,15 @@ export function DownloadSection({ data, onReset }) {
                                 <div className="absolute top-4 right-4 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-10">
                                     <button
                                         onClick={() => handleDownload(data.videoUrl, `pin-video-${Date.now()}.mp4`)}
-                                        className="bg-red-600 text-white px-4 py-2 rounded-full font-bold flex items-center gap-2 hover:bg-red-700 transition-colors shadow-lg cursor-pointer"
+                                        disabled={downloadingUrl === data.videoUrl}
+                                        className="bg-red-600 text-white px-4 py-2 rounded-full font-bold flex items-center gap-2 hover:bg-red-700 transition-colors shadow-lg cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
                                     >
-                                        <Download className="w-4 h-4" />
-                                        Save Video
+                                        {downloadingUrl === data.videoUrl ? (
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                        ) : (
+                                            <Download className="w-4 h-4" />
+                                        )}
+                                        {downloadingUrl === data.videoUrl ? 'Downloading...' : 'Save Video'}
                                     </button>
                                 </div>
                             </div>
@@ -93,10 +102,15 @@ export function DownloadSection({ data, onReset }) {
                                     <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 to-transparent flex items-end justify-center opacity-100 md:inset-0 md:bg-black/50 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-10">
                                         <button
                                             onClick={() => handleDownload(img, `pin-image-${Date.now()}.jpg`)}
-                                            className="bg-white text-black px-6 py-3 rounded-full font-bold flex items-center gap-2 hover:bg-gray-200 transition-colors cursor-pointer shadow-lg w-full md:w-auto justify-center"
+                                            disabled={downloadingUrl === img}
+                                            className="bg-white text-black px-6 py-3 rounded-full font-bold flex items-center gap-2 hover:bg-gray-200 transition-colors cursor-pointer shadow-lg w-full md:w-auto justify-center disabled:opacity-70 disabled:cursor-not-allowed"
                                         >
-                                            <Download className="w-5 h-5" />
-                                            Download Image
+                                            {downloadingUrl === img ? (
+                                                <Loader2 className="w-5 h-5 animate-spin" />
+                                            ) : (
+                                                <Download className="w-5 h-5" />
+                                            )}
+                                            {downloadingUrl === img ? 'Downloading...' : 'Download Image'}
                                         </button>
                                     </div>
                                 </div>
